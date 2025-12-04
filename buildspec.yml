@@ -5,27 +5,27 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR.......
-      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 920378918766.dkr.ecr.us-west-2.amazonaws.com
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 920378918766.dkr.ecr.us-west-2.amazonaws.com
       - # Replace with this to your repository URI
-      - REPOSITORY_URL=920378918766.dkr.ecr.us-west-2.amazonaws.com/nodeapp
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_NUMBER)
+      #- REPOSITORY_URL=920378918766.dkr.ecr.us-west-2.amazonaws.com/nodeapp
+      #- IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_NUMBER)
   build:
     commands:
       - echo Build started on `date`
       - echo Docker image is building... 
-      - npm --version
-      - npm install
-      - docker build -t $REPOSITORY_URL:latest .
-      - docker tag $REPOSITORY_URL:latest $REPOSITORY_URL:$IMAGE_TAG    
+      #- npm --version
+      #- npm install
+      - docker build -t $IMAGE_REPO:latest .
+      - docker tag $IMAGE_REPO:latest $IMAGE_REPO:$IMAGE_TAG    
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing Docker image to AWS ECR .....
-      - docker push $REPOSITORY_URL:$IMAGE_TAG 
+      - docker push $IMAGE_REPO:$IMAGE_TAG 
       - echo ECS Configuration....
       - echo Writing image definitions file...
       - CONTAINER_NAME=nodeapp-container
-      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URL:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $IMAGE_REPO:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json   
 artifacts:
     files: imagedefinitions.json
